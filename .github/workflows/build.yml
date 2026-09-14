@@ -1,3 +1,4 @@
+
 name: Build APK
 
 on:
@@ -17,7 +18,3 @@ jobs:
           buildozer_version: stable
 
       - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: pulsequiz-apk
-          path: bin/*.apk
