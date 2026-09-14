@@ -1,103 +1,23 @@
-name: Build Android APK
+name: Build APK
 
 on:
-  push:
-    branches:
-      - main
-      - master
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
-
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Check required files
-        run: |
-          echo "🔍 Проверка структуры проекта..."
-          if [ ! -f "main.py" ]; then
-            echo "❌ ОШИБКА: Файл main.py не найден в корне репозитория!"
-            exit 1
-          fi
-          if [ ! -f "buildozer.spec" ]; then
-            echo "❌ ОШИБКА: Файл buildozer.spec не найден в корне репозитория!"
-            exit 1
-          fi
-          echo "✅ Все необходимые файлы найдены."
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Build APK with Buildozer
+        uses: ArtemSBulgakov/buildozer-action@v1
         with:
-          python-version: '3.10'
+          workdir: .
+          buildozer_version: stable
 
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            build-essential \
-            git \
-            ffmpeg \
-            libsdl2-dev \
-            libsdl2-image-dev \
-            libsdl2-mixer-dev \
-            libsdl2-ttf-dev \
-            libportmidi-dev \
-            libswscale-dev \
-            libavformat-dev \
-            libavcodec-dev \
-            libunwind-dev \            zlib1g-dev \
-            libsqlite3-dev \
-            sqlite3 \
-            bzip2 \
-            libbz2-dev \
-            openssl \
-            libgdbm-dev \
-            libgdbm-compat-dev \
-            liblzma-dev \
-            libreadline-dev \
-            uuid-dev \
-            libgstreamer1.0-dev \
-            gstreamer1.0-plugins-base \
-            gstreamer1.0-plugins-good \
-            zip \
-            unzip \
-            autoconf \
-            libtool \
-            pkg-config \
-            libncurses5-dev \
-            libncursesw5-dev \
-            libtinfo5 \
-            cmake \
-            libffi-dev \
-            libssl-dev \
-            automake \
-            openjdk-17-jdk
-
-      - name: Set up Java 17
-        uses: actions/setup-java@v4
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Install Python dependencies
-        run: |
-          pip install --upgrade pip
-          pip install buildozer cython==0.29.33
-
-      - name: Pre-accept Android licenses
-        run: |
-          # Надежный способ принять все лицензии Android SDK до начала сборки
-          yes | sdkmanager --licenses || true
-
-      - name: Build with Buildozer
-        run: |
-          # --verbose выводит полный лог, чтобы мы увидели точную причину ошибки, если она повторится
-          buildozer --verbose android debug
-
-      - name: Upload APK artifact        uses: actions/upload-artifact@v4
-        with:
-          name: PulseTKMquiz-APK
+          name: pulsequiz-apk
           path: bin/*.apk
-          retention-days: 7
